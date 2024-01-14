@@ -114,8 +114,15 @@ def create_dataframe(default_date, processed_details):
     lines = table3.split('\n')
     non_empty_lines = [line for line in lines if line.strip() != '']
     table3 = '\n'.join(non_empty_lines)
-    table3 = table3.replace(" - ", "-").replace("  ", "").replace("Large Package Mix", "LargePackageMix").replace(" Promotion", "Promotion").replace(" Charge", "Charge").replace(" Package", "Package").replace(" Stop", "Stop").replace(" Surcharge", "Surcharge").replace(": ", ":").replace(" charge ", "charge_").replace(" trans ", "trans").replace("Safe Operating Incentive", "SafeOperatingIncentive").replace(" Q4 ", "Q4")
+    table3 = table3.replace(" - ", "-").replace("  ", "").replace("Large Package Mix", "LargePackageMix").replace(" Promotion", "Promotion").replace(" Charge", "Charge").replace(" Package", "Package").replace(" Stop", "Stop").replace(" Surcharge", "Surcharge").replace(": ", ":").replace(" charge ", "charge_").replace(" trans ", "trans").replace("Safe Operating Incentive", "SafeOperatingIncentive").replace(" Q1 ", "Q1").replace(" Q2 ", "Q2").replace(" Q3 ", "Q3").replace(" Q4 ", "Q4").replace(" Contingency", "Contingency").replace(" adjust", "adjust").replace(" previous ", "previous")
+    
+    # pattern = re.compile(r'(\d)\s(\d)')
+    # table3 = re.sub(pattern, r'\1|\2', table3)
+    # pattern = r'\b\d{1,2}/\d{1,2}/(?:\d{2})?\d{2}\b'
+    # matches = re.findall(pattern, table3)
 
+    # if matches:
+    #     table3 = re.sub(r'\s', '|', table3)
 
     # Create DataFrame3
     data3 = [line.split() for line in table3.split('\n') if line.strip()]
@@ -129,6 +136,8 @@ def create_dataframe(default_date, processed_details):
 
     columns = data3[0]
     rows = data3[1:]
+    # for item in rows:
+    #     print(f"length: {len(item)} | item: {item}")
     df3 = pd.DataFrame(rows, columns=columns)
 
 
@@ -137,20 +146,37 @@ def create_dataframe(default_date, processed_details):
         table4 = processed_details.split("CHARGEBACKS AND DEDUCTIONS", 1)[-1]
         table4 = table4.split("CHARGEBACKS AND DEDUCTIONS TOTAL:")[0]
         table4 = re.sub(re.compile(r"DEDUCTION DEDUCTION[^\n]*"), "", table4) 
-        table4 = table4.replace("DOCUMENT ID", "DOCUMENTID").replace("GOAL $AMT", "DEDUCTION_GOAL$AMT").replace("$TAKEN TO DATE", "DEDUCTION_$TAKEN_TO_DATE").replace("$AMOUNT", "DEDUCTION_$AMOUNT", 1).replace(" $AMOUNT ", " SALESTAX_$AMOUNT ", 1).replace("$ARREARS", "DEDUCTION_$ARREARS").replace("$REFUND", "DEDUCTION_$REFUND").replace("NET $AMT", "DEDUCTION_NET$AMT").replace("Invoice diverted chrg stmt", "Invoice_diverted_chrg_stmt").replace("SUB TOTAL", "SUBTOTAL").replace("-", "")
+
+        pattern = r'Q[1-4]\s\d{4}\s[A-Za-z]\d+'
+        matches = re.finditer(pattern, table4)
+        for match in matches:
+            match_str = match.group()
+            replaced_str = re.sub(r'\s', '-', match_str)
+            table4 = table4.replace(match_str, replaced_str, 1)
+
+        table4 = table4.replace("DOCUMENT ID", "DOCUMENTID").replace("GOAL $AMT", "DEDUCTION_GOAL$AMT").replace("$TAKEN TO DATE", "DEDUCTION_$TAKEN_TO_DATE").replace("$AMOUNT", "DEDUCTION_$AMOUNT", 1).replace(" $AMOUNT ", " SALESTAX_$AMOUNT ", 1).replace("$ARREARS", "DEDUCTION_$ARREARS").replace("$REFUND", "DEDUCTION_$REFUND").replace("NET $AMT", "DEDUCTION_NET$AMT").replace("Invoice diverted chrg stmt", "Invoice_diverted_chrg_stmt").replace("SUB TOTAL", "SUBTOTAL").replace("-", "").replace("Liability Cost Contribution", "Liability_Cost_Contribution").replace("Q1 ", "Q1-").replace("Q2 ", "Q2-").replace("Q3 ", "Q3-").replace("Q4 ", "Q4-").replace("Inv divert to Installment Plan", "Inv_divert_to_Installment_Plan")
         
+        
+
         # Create DataFrame4
         data4 = [line.split() for line in table4.split('\n') if line.strip()]
+        # for item in data4:
+        #     print(f"length: {len(item)} | data_item: {item}")
 
         for i in range(1, 8):
             data4[1].insert(i, "")
 
-        data4[2].insert(0, "")
-        for i in range(5, 9):
-            data4[2].insert(i, "")
+        for j in range(2, len(data4) - 1):
+            if data4[j][0] in ["Invoice_diverted_chrg_stmt", "Liability_Cost_Contribution", "Inv_divert_to_Installment_Plan"]:
+                for i in range(1, 8):
+                    data4[j].insert(i, "")
+            else:
+                data4[j].insert(0, "")
+                for i in range(5, 9):
+                    data4[j].insert(i, "")
 
         for i in range(1, 8):
-            data4[3].insert(i, "")
+            data4[-1].insert(i, "")
 
         data4[0].insert(0, "DATE")
         for i in range(1, len(data4)):
@@ -158,7 +184,8 @@ def create_dataframe(default_date, processed_details):
 
         columns = data4[0]
         rows = data4[1:]
-
+        # for item in rows:
+        #     print(f"length: {len(item)} | item: {item}")
         df4 = pd.DataFrame(rows, columns=columns)
     else:
         data4 = ""
@@ -189,7 +216,7 @@ def create_dataframe(default_date, processed_details):
     else:
         table6 = table6.split("OTHER INFORMATION:", 1)[0]
 
-    table6 = table6.replace("FEDEX ID", "FEDEXID").replace("FEDEX NAME", "FEDEXNAME").replace("-", "xx").replace("’", "xxx")
+    table6 = table6.replace("FEDEX ID", "FEDEXID").replace("FEDEX NAME", "FEDEXNAME").replace("-", "xx").replace("’", "xxx").replace("'", "xxxx")
 
     # Create DataFrame6
     data6 = [line.split() for line in table6.split('\n') if line.strip()]
@@ -215,13 +242,15 @@ def create_dataframe(default_date, processed_details):
             data6[i].insert(2, "")
 
         for j in range(len(data6[i])):
-            data6[i][j] = data6[i][j].replace("_", " ").replace("xx", "-").replace("xxx", "’")
+            data6[i][j] = data6[i][j].replace("_", " ").replace("xx", "-").replace("xxx", "’").replace("xxxx", "'")
 
     data6.insert(0, ["", "DRIVER", "DRIVER", "", "", "", "", "", ""])
 
 
     columns = data6[0]
     rows = data6[1:]
+    # for item in rows:
+    #     print(f"length: {len(item)} | item: {item}")
 
     for inner_list in rows[1:]:
         if inner_list[0] != 'WEEKLY TOTALS:':
@@ -711,8 +740,8 @@ class MyApp:
             self.new_file_path = f"{self.new_directory}/{self.entry.get()}.xlsx"
             page_details = extract_pdf_data(self.file_paths[0])
             default_date, processed_details, isp_id = process_text(page_details)
+            # print(f"--------------------------{self.file_paths[0]}")
             dataframe_dict = create_dataframe(default_date, processed_details)
-
             new_excel_file(self.new_file_path, dataframe_dict, isp_id)
 
             if len(self.file_paths) > 1:
@@ -721,6 +750,7 @@ class MyApp:
                 for i in range(1, len(self.file_paths)):
                     page_details = extract_pdf_data(self.file_paths[i])
                     default_date, processed_details, isp_id = process_text(page_details)
+                    # print(f"--------------------------{self.file_paths[i]}")
                     dataframe_dict = create_dataframe(default_date, processed_details)
 
                     if str(existing_isp_id) != str(isp_id):
@@ -742,6 +772,8 @@ class MyApp:
                     messagebox.showinfo("Success", "PDF converted successfully!")
                 else:
                     messagebox.showinfo("Operation canceled", "Operation canceled by user.")
+            else:
+                messagebox.showinfo("Success", "PDF converted successfully!")
 
         
 
