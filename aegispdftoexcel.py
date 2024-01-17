@@ -49,6 +49,8 @@ def process_text(page_details):
 
     isp_id = page_details.split("ISP SIGNATORY FEDEX ID: ", 1)[-1].split("ADDRESS:", 1)[0].strip()
 
+    station = page_details.split("PRIMARY STATION #: ", 1)[-1].split('\n')[0].strip().replace("   ", " ")
+
     page_details = re.split(r"CONTRACTED SERVICE AREA:[^\n]*", page_details, maxsplit=1)[-1]
 
     page_details = page_details.replace("_", "").replace("# ", "#").replace("$ ", "$").replace("$TOTAL AMT", "$TOTAL_AMT").replace("WEEKLY TOTALS", "WEEKLY_TOTALS").replace(" TOTALS", "").replace(" %", "%")
@@ -67,9 +69,9 @@ def process_text(page_details):
 
     processed_details = re.compile(r"ISP AGREEMENT[^\n]*").sub("", page_details)
 
-    return default_date, processed_details, isp_id
+    return default_date, processed_details, isp_id, station
 
-def create_dataframe(default_date, processed_details):
+def create_dataframe(default_date, processed_details, default_station):
     dataframe_dict = {}
 
     # Table 1
@@ -244,7 +246,22 @@ def create_dataframe(default_date, processed_details):
         for j in range(len(data6[i])):
             data6[i][j] = data6[i][j].replace("_", " ").replace("xx", "-").replace("xxx", "’").replace("xxxx", "'")
 
-    data6.insert(0, ["", "DRIVER", "DRIVER", "", "", "", "", "", ""])
+    for data in data6:
+        print(data)
+
+    station = default_station
+    for i in range(1, len(data6)):
+        if "FACILITY" in data6[i]:
+            data6[i] = data6[i][2:]
+            station = ' '.join(data6[i])
+        elif "WEEKLY_TOTALS:" in data6[i]:
+            pass
+        else:
+            data6[i].insert(9, station)
+
+    data6 = [inner_list for inner_list in data6 if len(inner_list) != 2]
+
+    data6.insert(0, ["", "DRIVER", "DRIVER", "", "", "", "", "", "", "STATION"])
 
 
     columns = data6[0]
@@ -428,6 +445,7 @@ def new_excel_file(output_excel_file, dataframe_dict, isp_id):
     sheet6.column_dimensions['A'].width = 20
     sheet6.column_dimensions['B'].width = 12
     sheet6.column_dimensions['C'].width = 25
+    sheet6.column_dimensions['J'].width = 27
 
     sheet6.merge_cells('D1:E1')
     sheet6.merge_cells('F1:G1')
@@ -739,9 +757,9 @@ class MyApp:
             # self.new_file_path = f"{os.path.dirname(self.file_paths[0])}/{self.entry.get()}.xlsx"
             self.new_file_path = f"{self.new_directory}/{self.entry.get()}.xlsx"
             page_details = extract_pdf_data(self.file_paths[0])
-            default_date, processed_details, isp_id = process_text(page_details)
+            default_date, processed_details, isp_id, station = process_text(page_details)
             # print(f"--------------------------{self.file_paths[0]}")
-            dataframe_dict = create_dataframe(default_date, processed_details)
+            dataframe_dict = create_dataframe(default_date, processed_details, station)
             new_excel_file(self.new_file_path, dataframe_dict, isp_id)
 
             if len(self.file_paths) > 1:
@@ -749,9 +767,9 @@ class MyApp:
                 existing_isp_id = workbook["Sheet1"]["B1"].value
                 for i in range(1, len(self.file_paths)):
                     page_details = extract_pdf_data(self.file_paths[i])
-                    default_date, processed_details, isp_id = process_text(page_details)
+                    default_date, processed_details, isp_id, station = process_text(page_details)
                     # print(f"--------------------------{self.file_paths[i]}")
-                    dataframe_dict = create_dataframe(default_date, processed_details)
+                    dataframe_dict = create_dataframe(default_date, processed_details, station)
 
                     if str(existing_isp_id) != str(isp_id):
                         file_name = basename(self.file_paths[i])
@@ -782,8 +800,8 @@ class MyApp:
         existing_isp_id = workbook["Sheet1"]["B1"].value
         for file in self.file_paths:
             page_details = extract_pdf_data(file)
-            default_date, processed_details, isp_id = process_text(page_details)
-            dataframe_dict = create_dataframe(default_date, processed_details)
+            default_date, processed_details, isp_id, station = process_text(page_details)
+            dataframe_dict = create_dataframe(default_date, processed_details, station)
 
             if str(existing_isp_id) != str(isp_id):
                 file_name = basename(file)
