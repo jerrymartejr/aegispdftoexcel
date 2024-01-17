@@ -116,15 +116,15 @@ def create_dataframe(default_date, processed_details, default_station):
     lines = table3.split('\n')
     non_empty_lines = [line for line in lines if line.strip() != '']
     table3 = '\n'.join(non_empty_lines)
-    table3 = table3.replace(" - ", "-").replace("  ", "").replace("Large Package Mix", "LargePackageMix").replace(" Promotion", "Promotion").replace(" Charge", "Charge").replace(" Package", "Package").replace(" Stop", "Stop").replace(" Surcharge", "Surcharge").replace(": ", ":").replace(" charge ", "charge_").replace(" trans ", "trans").replace("Safe Operating Incentive", "SafeOperatingIncentive").replace(" Q1 ", "Q1").replace(" Q2 ", "Q2").replace(" Q3 ", "Q3").replace(" Q4 ", "Q4").replace(" Contingency", "Contingency").replace(" adjust", "adjust").replace(" previous ", "previous")
-    
-    # pattern = re.compile(r'(\d)\s(\d)')
-    # table3 = re.sub(pattern, r'\1|\2', table3)
-    # pattern = r'\b\d{1,2}/\d{1,2}/(?:\d{2})?\d{2}\b'
-    # matches = re.findall(pattern, table3)
+    table3 = table3.replace(" - ", "-").replace("  ", "").replace("Large Package Mix", "LargePackageMix").replace(" Promotion", "Promotion").replace(" Charge", "Charge").replace(" Package", "Package").replace(" Stop", "Stop").replace(" Surcharge", "Surcharge").replace(": ", ":").replace(" charge ", "charge_").replace(" trans ", "trans").replace("Safe Operating Incentive", "SafeOperatingIncentive").replace(" Q1 ", "Q1").replace(" Q2 ", "Q2").replace(" Q3 ", "Q3").replace(" Q4 ", "Q4").replace(" Contingency", "Contingency").replace(" adjust", "adjust").replace(" previous ", "previous").replace("Blind Spot ", "BlindSpot").replace(" Sensor", "Sensor").replace(" Theft ", "Theft").replace(" Time ", "Time").replace(" Activity", "Activity")
 
-    # if matches:
-    #     table3 = re.sub(r'\s', '|', table3)
+    pattern = r'\d{1,2}/\d{1,2}/\d{4}\s\d{1,2}/\d{1,2}/\d{2}-\d{1,2}/\d{1,2}/\d{2}'
+    def replace_space(match):
+        return match.group().replace(' ', '|')
+    table3 = re.sub(pattern, replace_space, table3)
+
+    pattern = r'(\d{2}/\d{2}/\d{4}) ([^.]*[a-zA-Z]+)'
+    table3 = re.sub(pattern, replace_space, table3)
 
     # Create DataFrame3
     data3 = [line.split() for line in table3.split('\n') if line.strip()]
@@ -135,6 +135,12 @@ def create_dataframe(default_date, processed_details, default_station):
         if len(data3[i]) == 2:
             data3[i].insert(1, "")
         data3[i].insert(0, default_date)
+
+    for i in range(1, len(data3)):
+        if len(data3[i]) == 5:
+            if "Contingency" in data3[i][2] or "through" in data3[i][2]:
+                joined_item = f"{data3[i][2]}|{data3[i][3]}"
+                data3[i] = data3[i][:2] + [joined_item] + data3[i][4:]
 
     columns = data3[0]
     rows = data3[1:]
@@ -246,8 +252,6 @@ def create_dataframe(default_date, processed_details, default_station):
         for j in range(len(data6[i])):
             data6[i][j] = data6[i][j].replace("_", " ").replace("xx", "-").replace("xxx", "’").replace("xxxx", "'")
 
-    for data in data6:
-        print(data)
 
     station = default_station
     for i in range(1, len(data6)):
@@ -336,7 +340,7 @@ def create_dataframe(default_date, processed_details, default_station):
         df8 = pd.DataFrame(rows, columns=columns)
     else:
         data8 = ""
-        df8 = pd.DataFrame(['DATE', 'FACILITY#', 'DESCRIPTION', '#STOPS'])
+        df8 = pd.DataFrame(columns=['DATE', 'FACILITY#', 'DESCRIPTION', '#STOPS'])
 
 
     # Table 9
@@ -801,6 +805,7 @@ class MyApp:
         for file in self.file_paths:
             page_details = extract_pdf_data(file)
             default_date, processed_details, isp_id, station = process_text(page_details)
+            # print(f"--------------------------{file}")
             dataframe_dict = create_dataframe(default_date, processed_details, station)
 
             if str(existing_isp_id) != str(isp_id):
