@@ -81,10 +81,26 @@ def create_dataframe(default_date, processed_details, default_station):
     # Create DataFrame1
     data1 = [line.split() for line in table1.split('\n') if line.strip()]
     columns = data1[0]
+    columns.insert(0, "DEFAULT DATE")
     rows = data1[1:]
     for inner_list in rows:
         if inner_list[0] != 'WEEKLY_TOTALS:':
             inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
+
+    for inner_list in rows:
+        inner_list.insert(0, default_date)
+
+    for i in range(1, len(data1)):
+        if len(data1[i]) != 14:
+            data1[i][0] = str(data1[i][0])
+            data1[i][1] = str(data1[i][1])
+            joined_string = " <-> ".join(data1[i])
+            data1[i] = [joined_string, "", "", ""]
+            data1[i].append("Yes")
+        else:
+            data1[i].append("No")
+
+    columns.append("Need Edit")
     df1 = pd.DataFrame(rows, columns=columns)
 
 
@@ -101,12 +117,28 @@ def create_dataframe(default_date, processed_details, default_station):
     # Create DataFrame2
     data2 = [line.split() for line in table2.split('\n') if line.strip()]
     columns = data2[0]
+    columns.insert(0, "DEFAULT DATE")
     rows = data2[1:]
     for inner_list in rows:
         if inner_list[0] != 'WEEKLY_TOTALS:':
             inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
         else:
             inner_list.insert(1, "")
+
+    for inner_list in rows:
+        inner_list.insert(0, default_date)
+
+    for i in range(1, len(data1)):
+        if len(data2[i]) != 9:
+            data2[i][0] = str(data2[i][0])
+            data2[i][1] = str(data2[i][1])
+            joined_string = " <-> ".join(data2[i])
+            data2[i] = [joined_string, "", "", ""]
+            data2[i].append("Yes")
+        else:
+            data2[i].append("No")
+
+    columns.append("Need Edit")
     df2 = pd.DataFrame(rows, columns=columns)  
 
 
@@ -142,7 +174,18 @@ def create_dataframe(default_date, processed_details, default_station):
                 joined_item = f"{data3[i][2]}|{data3[i][3]}"
                 data3[i] = data3[i][:2] + [joined_item] + data3[i][4:]
 
+    for i in range(1, len(data3)):
+        if len(data3[i]) != 4:
+            data3[i][0] = str(data3[i][0])
+            joined_string = " <-> ".join(data3[i])
+            data3[i] = [joined_string, "", "", ""]
+            data3[i].append("Yes")
+        else:
+            data3[i].append("No")
+
+
     columns = data3[0]
+    columns.append("Need Edit")
     rows = data3[1:]
     # for item in rows:
     #     print(f"length: {len(item)} | item: {item}")
@@ -190,14 +233,25 @@ def create_dataframe(default_date, processed_details, default_station):
         for i in range(1, len(data4)):
             data4[i].insert(0, default_date)
 
-        columns = data4[0]
-        rows = data4[1:]
         # for item in rows:
         #     print(f"length: {len(item)} | item: {item}")
+        for i in range(1, len(data4)):
+            if len(data4[i]) != 10:
+                data4[i][0] = str(data4[i][0])
+                joined_string = " <-> ".join(data4[i])
+                data4[i] = [joined_string, "", "", ""]
+                data4[i].append("Yes")
+            else:
+                data4[i].append("No")
+                
+        columns = data4[0]
+        rows = data4[1:]
+
+        columns.append("Need Edit")
         df4 = pd.DataFrame(rows, columns=columns)
     else:
         data4 = ""
-        df4 = pd.DataFrame(columns=['DATE', 'TYPE', 'DOCUMENTID', 'DEDUCTION_GOAL$AMT', 'DEDUCTION_$TAKEN_TO_DATE', 'DEDUCTION_$AMOUNT', 'SALESTAX_$AMOUNT', 'DEDUCTION_$ARREARS', 'DEDUCTION_$REFUND', 'DEDUCTION_NET$AMT'])
+        df4 = pd.DataFrame(columns=['DATE', 'TYPE', 'DOCUMENTID', 'DEDUCTION_GOAL$AMT', 'DEDUCTION_$TAKEN_TO_DATE', 'DEDUCTION_$AMOUNT', 'SALESTAX_$AMOUNT', 'DEDUCTION_$ARREARS', 'DEDUCTION_$REFUND', 'DEDUCTION_NET$AMT', 'Need Edit'])
 
 
     # Table 5
@@ -210,6 +264,18 @@ def create_dataframe(default_date, processed_details, default_station):
 
     for i in range(len(data5)):
         data5[i].insert(0, default_date)
+
+    for i in range(len(data5)):
+        if len(data5[i]) != 3:
+            data5[i][0] = str(data5[i][0])
+            joined_string = " <-> ".join(data5[i])
+            data5[i] = [joined_string, "", "", ""]
+            data5[i].append("Yes")
+        else:
+            data5[i].append("No")
+                
+        columns = data5[0]
+        rows = data5[1:]
 
     rows = data5
     df5 = pd.DataFrame(rows, columns=None)
@@ -269,6 +335,7 @@ def create_dataframe(default_date, processed_details, default_station):
 
 
     columns = data6[0]
+    columns.insert(0, "DEFAULT DATE")
     rows = data6[1:]
     # for item in rows:
     #     print(f"length: {len(item)} | item: {item}")
@@ -279,6 +346,20 @@ def create_dataframe(default_date, processed_details, default_station):
                 inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
             except ValueError as e:
                 print(f"Error converting date: {e}")
+    for inner_list in rows:
+        inner_list.insert(0, default_date)
+
+    for i in range(1, len(data6)):
+        if len(data6[i]) != 11:
+            data6[i][0] = str(data6[i][0])
+            data6[i][1] = str(data6[i][1])
+            joined_string = " <-> ".join(data6[i])
+            data6[i] = [joined_string, "", "", ""]
+            data6[i].append("Yes")
+        else:
+            data6[i].append("No")
+
+    columns.append("Need Edit")
     df6 = pd.DataFrame(rows, columns=columns)
 
 
@@ -303,6 +384,19 @@ def create_dataframe(default_date, processed_details, default_station):
         for inner_list in rows:
             if inner_list[0] != 'WEEKLY_TOTALS:':
                 inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
+
+        for inner_list in rows:
+            inner_list.insert(0, default_date)
+
+        for i in range(len(data7)):
+            if len(data7[i]) != 10:
+                data7[i][0] = str(data7[i][0])
+                data7[i][1] = str(data7[i][1])
+                joined_string = " <-> ".join(data7[i])
+                data7[i] = [joined_string, "", "", ""]
+                data7[i].append("Yes")
+            else:
+                data7[i].append("No")
         df7 = pd.DataFrame(rows, columns=None)
     else:
         data7 = ""
@@ -334,13 +428,29 @@ def create_dataframe(default_date, processed_details, default_station):
             data8[j] = merged_list
 
         columns = data8[0]
+        columns.insert(0, "DEFAULT DATE")
         rows = data8[1:]
         for inner_list in rows:
             inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
+
+        for inner_list in rows:
+            inner_list.insert(0, default_date)
+
+        for i in range(1, len(data8)):
+            if len(data8[i]) != 5:
+                data8[i][0] = str(data8[i][0])
+                data8[i][1] = str(data8[i][1])
+                joined_string = " <-> ".join(data8[i])
+                data8[i] = [joined_string, "", "", ""]
+                data8[i].append("Yes")
+            else:
+                data8[i].append("No")
+
+        columns.append("Need Edit")
         df8 = pd.DataFrame(rows, columns=columns)
     else:
         data8 = ""
-        df8 = pd.DataFrame(columns=['DATE', 'FACILITY#', 'DESCRIPTION', '#STOPS'])
+        df8 = pd.DataFrame(columns=['DEFAULT DATE', 'DATE', 'FACILITY#', 'DESCRIPTION', '#STOPS', "Need Edit"])
 
 
     # Table 9
@@ -352,6 +462,16 @@ def create_dataframe(default_date, processed_details, default_station):
 
     for i in range(len(data9)):
         data9[i].insert(0, default_date)
+
+    for i in range(len(data9)):
+        if len(data9[i]) != 3:
+            data9[i][0] = str(data9[i][0])
+            data9[i][1] = str(data9[i][1])
+            joined_string = " <-> ".join(data9[i])
+            data9[i] = [joined_string, "", "", ""]
+            data9[i].append("Yes")
+        else:
+            data9[i].append("No")
 
     rows = data9
     df9 = pd.DataFrame(rows, columns=None)
@@ -391,32 +511,34 @@ def new_excel_file(output_excel_file, dataframe_dict, isp_id):
     sheet1['A1'] = 'FEDEX ID'
     sheet1['B1'] = int(isp_id)
 
-    sheet1.merge_cells('B2:E2')
-    sheet1.merge_cells('F2:I2')
-    sheet1.merge_cells('J2:L2')
+    sheet1.merge_cells('C2:F2')
+    sheet1.merge_cells('G2:J2')
+    sheet1.merge_cells('K2:M2')
 
-    sheet1['B2'] = 'PICK-UP'
-    sheet1['F2'] = 'DELIVERY'
-    sheet1['J2'] = 'STOPS/OTHER'
+    sheet1['C2'] = 'PICK-UP'
+    sheet1['G2'] = 'DELIVERY'
+    sheet1['K2'] = 'STOPS/OTHER'
 
-    for row in sheet1['B2:L2']:
+    for row in sheet1['C2:K2']:
         for cell in row:
             cell.alignment = Alignment(horizontal='center', vertical='center')
 
     all_border(sheet1)
 
     sheet1.column_dimensions['A'].width = 15
-    sheet1.column_dimensions['M'].width = 12
+    sheet1.column_dimensions['B'].width = 15
+    sheet1.column_dimensions['N'].width = 12
 
-    sheet1['J3'] = 'TOTAL'
-    sheet1['K3'] = 'FUEL'
-    sheet1['L3'] = 'SURGE STOP'
+    sheet1['K3'] = 'TOTAL'
+    sheet1['L3'] = 'FUEL'
+    sheet1['M3'] = 'SURGE STOP'
 
     # Sheet 2
     sheet2 = writer.sheets['Sheet2']
     all_border(sheet2)
     sheet2.column_dimensions['A'].width = 15
-    sheet2.column_dimensions['H'].width = 12
+    sheet2.column_dimensions['B'].width = 15
+    sheet2.column_dimensions['I'].width = 12
 
     # Sheet 3
     sheet3 = writer.sheets['Sheet3']
@@ -447,24 +569,26 @@ def new_excel_file(output_excel_file, dataframe_dict, isp_id):
     sheet6 = writer.sheets['Sheet6']
     all_border(sheet6)
     sheet6.column_dimensions['A'].width = 20
-    sheet6.column_dimensions['B'].width = 12
-    sheet6.column_dimensions['C'].width = 25
-    sheet6.column_dimensions['J'].width = 27
+    sheet6.column_dimensions['B'].width = 20
+    sheet6.column_dimensions['C'].width = 12
+    sheet6.column_dimensions['D'].width = 25
+    sheet6.column_dimensions['K'].width = 27
 
-    sheet6.merge_cells('D1:E1')
-    sheet6.merge_cells('F1:G1')
-    sheet6.merge_cells('H1:I1')
+    sheet6.merge_cells('E1:F1')
+    sheet6.merge_cells('G1:H1')
+    sheet6.merge_cells('I1:J1')
 
-    sheet6['D1'] = "PICK-UP"
-    sheet6['F1'] = "DELIVERY"
-    sheet6['H1'] = "E-COMMERCE"
+    sheet6['E1'] = "PICK-UP"
+    sheet6['G1'] = "DELIVERY"
+    sheet6['I1'] = "E-COMMERCE"
 
     # Sheet 7
     sheet7 = writer.sheets['Sheet7']
     all_border(sheet7)
     sheet7.column_dimensions['A'].width = 20
-    sheet7.column_dimensions['B'].width = 12
+    sheet7.column_dimensions['B'].width = 20
     sheet7.column_dimensions['C'].width = 12
+    sheet7.column_dimensions['D'].width = 12
     sheet7.delete_rows(1, amount=1)
 
     # Sheet 8
@@ -472,7 +596,8 @@ def new_excel_file(output_excel_file, dataframe_dict, isp_id):
     all_border(sheet8)
     sheet8.column_dimensions['A'].width = 12
     sheet8.column_dimensions['B'].width = 12
-    sheet8.column_dimensions['C'].width = 20
+    sheet8.column_dimensions['C'].width = 12
+    sheet8.column_dimensions['D'].width = 20
 
     # Sheet 9
     sheet9 = writer.sheets['Sheet9']
