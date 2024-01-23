@@ -7,6 +7,7 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Border, Side
 from datetime import datetime
+import json
 
 import os
 from os.path import basename
@@ -37,6 +38,15 @@ def all_border(sheet):
                 top=Side(border_style="thin", color="000000"),
                 bottom=Side(border_style="thin", color="000000")
             )
+
+def replace_text(json_file, text):
+    with open(json_file, "r") as file:
+        data_dict = json.load(file)
+
+    for key, value in data_dict.items():
+        text = text.replace(key, value)
+
+    return text
 
 def extract_pdf_data(input_pdf_file):
     pdf_reader = PdfReader(input_pdf_file)
@@ -148,7 +158,9 @@ def create_dataframe(default_date, processed_details, default_station):
     lines = table3.split('\n')
     non_empty_lines = [line for line in lines if line.strip() != '']
     table3 = '\n'.join(non_empty_lines)
-    table3 = table3.replace(" - ", "-").replace("  ", "").replace("Large Package Mix", "LargePackageMix").replace(" Promotion", "Promotion").replace(" Charge", "Charge").replace(" Package", "Package").replace(" Stop", "Stop").replace(" Surcharge", "Surcharge").replace(": ", ":").replace(" charge ", "charge_").replace(" trans ", "trans").replace("Safe Operating Incentive", "SafeOperatingIncentive").replace(" Q1 ", "Q1").replace(" Q2 ", "Q2").replace(" Q3 ", "Q3").replace(" Q4 ", "Q4").replace(" Contingency", "Contingency").replace(" adjust", "adjust").replace(" previous ", "previous").replace("Blind Spot ", "BlindSpot").replace(" Sensor", "Sensor").replace(" Theft ", "Theft").replace(" Time ", "Time").replace(" Activity", "Activity")
+    table3 = table3.replace(" - ", "-").replace("  ", "").replace("Large Package Mix", "LargePackageMix").replace("Promotion", "Promotion").replace(" Charge", "Charge").replace(" Package", "Package").replace(" Stop", "Stop").replace(" Surcharge", "Surcharge").replace(": ", ":").replace(" charge ", "charge_").replace(" trans ", "trans").replace("Safe Operating Incentive", "SafeOperatingIncentive").replace(" Q1 ", "Q1").replace(" Q2 ", "Q2").replace(" Q3 ", "Q3").replace(" Q4 ", "Q4").replace(" Contingency", "Contingency").replace(" adjust", "adjust").replace(" previous ", "previous").replace("Blind Spot ", "BlindSpot").replace(" Sensor", "Sensor").replace(" Theft ", "Theft").replace(" Time ", "Time").replace(" Activity", "Activity")
+
+    table3 = replace_text("sheet3.json", table3)
 
     pattern = r'\d{1,2}/\d{1,2}/\d{4}\s\d{1,2}/\d{1,2}/\d{2}-\d{1,2}/\d{1,2}/\d{2}'
     def replace_space(match):
@@ -887,7 +899,7 @@ class MyApp:
             self.new_file_path = f"{self.new_directory}/{self.entry.get()}.xlsx"
             page_details = extract_pdf_data(self.file_paths[0])
             default_date, processed_details, isp_id, station = process_text(page_details)
-            # print(f"--------------------------{self.file_paths[0]}")
+            print(f"--------------------------{self.file_paths[0]}")
             dataframe_dict = create_dataframe(default_date, processed_details, station)
             new_excel_file(self.new_file_path, dataframe_dict, isp_id)
 
@@ -897,7 +909,7 @@ class MyApp:
                 for i in range(1, len(self.file_paths)):
                     page_details = extract_pdf_data(self.file_paths[i])
                     default_date, processed_details, isp_id, station = process_text(page_details)
-                    # print(f"--------------------------{self.file_paths[i]}")
+                    print(f"--------------------------{self.file_paths[i]}")
                     dataframe_dict = create_dataframe(default_date, processed_details, station)
 
                     if str(existing_isp_id) != str(isp_id):
@@ -930,7 +942,7 @@ class MyApp:
         for file in self.file_paths:
             page_details = extract_pdf_data(file)
             default_date, processed_details, isp_id, station = process_text(page_details)
-            # print(f"--------------------------{file}")
+            print(f"--------------------------{file}")
             dataframe_dict = create_dataframe(default_date, processed_details, station)
 
             if str(existing_isp_id) != str(isp_id):
