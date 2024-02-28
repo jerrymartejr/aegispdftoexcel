@@ -57,6 +57,8 @@ def process_text(page_details):
     default_date = page_details.split("WEEK ENDING", 1)[-1].split("ADVICE", 1)[0].strip()
     default_date = datetime.strptime(default_date, "%m/%d/%Y").date()
 
+    contract_num = page_details.split("ISP AGREEMENT ID: ", 1)[-1].split("ISP SIGNATORY FEDEX ID:", 1)[0].strip()
+
     isp_id = page_details.split("ISP SIGNATORY FEDEX ID: ", 1)[-1].split("ADDRESS:", 1)[0].strip()
 
     station = page_details.split("PRIMARY STATION #: ", 1)[-1].split('\n')[0].strip().replace("   ", " ")
@@ -79,9 +81,9 @@ def process_text(page_details):
 
     processed_details = re.compile(r"ISP AGREEMENT[^\n]*").sub("", page_details)
 
-    return default_date, processed_details, isp_id, station
+    return default_date, processed_details, isp_id, station, contract_num
 
-def create_dataframe(default_date, processed_details, default_station):
+def create_dataframe(default_date, processed_details, default_station, contract_num):
     dataframe_dict = {}
 
     # Table 1
@@ -99,9 +101,12 @@ def create_dataframe(default_date, processed_details, default_station):
 
     for inner_list in rows:
         inner_list.insert(0, default_date)
+        inner_list.append(contract_num)
+
+    columns.append("Contract #")
 
     for i in range(1, len(data1)):
-        if len(data1[i]) != 14:
+        if len(data1[i]) != 15:
             data1[i][0] = str(data1[i][0])
             data1[i][1] = str(data1[i][1])
             joined_string = " <-> ".join(data1[i])
@@ -138,7 +143,7 @@ def create_dataframe(default_date, processed_details, default_station):
     for inner_list in rows:
         inner_list.insert(0, default_date)
 
-    for i in range(1, len(data1)):
+    for i in range(1, len(data2)):
         if len(data2[i]) != 9:
             data2[i][0] = str(data2[i][0])
             data2[i][1] = str(data2[i][1])
@@ -158,7 +163,7 @@ def create_dataframe(default_date, processed_details, default_station):
     lines = table3.split('\n')
     non_empty_lines = [line for line in lines if line.strip() != '']
     table3 = '\n'.join(non_empty_lines)
-    table3 = table3.replace(" - ", "-").replace("  ", "").replace("Large Package Mix", "LargePackageMix").replace("Promotion", "Promotion").replace(" Charge", "Charge").replace(" Package", "Package").replace(" Stop", "Stop").replace(" Surcharge", "Surcharge").replace(": ", ":").replace(" charge ", "charge_").replace(" trans ", "trans").replace("Safe Operating Incentive", "SafeOperatingIncentive").replace(" Q1 ", "Q1").replace(" Q2 ", "Q2").replace(" Q3 ", "Q3").replace(" Q4 ", "Q4").replace(" Contingency", "Contingency").replace(" adjust", "adjust").replace(" previous ", "previous").replace("Blind Spot ", "BlindSpot").replace(" Sensor", "Sensor").replace(" Theft ", "Theft").replace(" Time ", "Time").replace(" Activity", "Activity")
+    table3 = table3.replace(" - ", "-").replace("  ", "").replace("Large Package Mix", "LargePackageMix").replace(" Promotion", "Promotion").replace(" Charge", "Charge").replace(" Package", "Package").replace(" Stop", "Stop").replace(" Surcharge", "Surcharge").replace(": ", ":").replace(" charge ", "charge_").replace(" trans ", "trans").replace("Safe Operating Incentive", "SafeOperatingIncentive").replace(" Q1 ", "Q1").replace(" Q2 ", "Q2").replace(" Q3 ", "Q3").replace(" Q4 ", "Q4").replace(" Contingency", "Contingency").replace(" adjust", "adjust").replace(" previous ", "previous").replace("Blind Spot ", "BlindSpot").replace(" Sensor", "Sensor").replace(" Theft ", "Theft").replace(" Time ", "Time").replace(" Activity", "Activity")
 
     table3 = replace_text("sheet3.json", table3)
 
@@ -540,6 +545,7 @@ def new_excel_file(output_excel_file, dataframe_dict, isp_id):
     sheet1.column_dimensions['A'].width = 15
     sheet1.column_dimensions['B'].width = 15
     sheet1.column_dimensions['N'].width = 12
+    sheet1.column_dimensions['O'].width = 12
 
     sheet1['K3'] = 'TOTAL'
     sheet1['L3'] = 'FUEL'
@@ -898,9 +904,9 @@ class MyApp:
             # self.new_file_path = f"{os.path.dirname(self.file_paths[0])}/{self.entry.get()}.xlsx"
             self.new_file_path = f"{self.new_directory}/{self.entry.get()}.xlsx"
             page_details = extract_pdf_data(self.file_paths[0])
-            default_date, processed_details, isp_id, station = process_text(page_details)
+            default_date, processed_details, isp_id, station, contract_num = process_text(page_details)
             print(f"--------------------------{self.file_paths[0]}")
-            dataframe_dict = create_dataframe(default_date, processed_details, station)
+            dataframe_dict = create_dataframe(default_date, processed_details, station, contract_num)
             new_excel_file(self.new_file_path, dataframe_dict, isp_id)
 
             if len(self.file_paths) > 1:
@@ -908,9 +914,9 @@ class MyApp:
                 existing_isp_id = workbook["Sheet1"]["B1"].value
                 for i in range(1, len(self.file_paths)):
                     page_details = extract_pdf_data(self.file_paths[i])
-                    default_date, processed_details, isp_id, station = process_text(page_details)
+                    default_date, processed_details, isp_id, station, contract_num = process_text(page_details)
                     print(f"--------------------------{self.file_paths[i]}")
-                    dataframe_dict = create_dataframe(default_date, processed_details, station)
+                    dataframe_dict = create_dataframe(default_date, processed_details, station, contract_num)
 
                     if str(existing_isp_id) != str(isp_id):
                         file_name = basename(self.file_paths[i])
@@ -941,9 +947,9 @@ class MyApp:
         existing_isp_id = workbook["Sheet1"]["B1"].value
         for file in self.file_paths:
             page_details = extract_pdf_data(file)
-            default_date, processed_details, isp_id, station = process_text(page_details)
+            default_date, processed_details, isp_id, station, contract_num = process_text(page_details)
             print(f"--------------------------{file}")
-            dataframe_dict = create_dataframe(default_date, processed_details, station)
+            dataframe_dict = create_dataframe(default_date, processed_details, station, contract_num)
 
             if str(existing_isp_id) != str(isp_id):
                 file_name = basename(file)
