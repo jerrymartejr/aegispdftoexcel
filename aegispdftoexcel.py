@@ -300,8 +300,8 @@ def create_dataframe(default_date, processed_details, default_station, contract_
 
     # Table 6
     table6 = re.split(r"DRIVER DRIVER[^\n]*", processed_details)[-1]
-    station = re.split(r"DRIVER DRIVER[^\n]*", processed_details)[0].strip()
-    station = station.split("FACILITY #:")[-1]
+    station = re.split(r"DRIVER DRIVER[^\n]*", processed_details)[0]
+    station = station.split("FACILITY #:")[-1].strip().replace("   ", " ")
 
     if "NON-SCAN ACTIVITY" in table6:
         table6 = table6.split("NON-SCAN ACTIVITY", 1)[0]
