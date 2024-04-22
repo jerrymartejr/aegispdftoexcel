@@ -94,12 +94,12 @@ def create_dataframe(default_date, processed_details, default_station, contract_
     data1 = [line.split() for line in table1.split('\n') if line.strip()]
     columns = data1[0]
     columns.insert(0, "DEFAULT DATE")
-    rows = data1[1:]
-    for inner_list in rows:
+    # rows = data1[1:]
+    for inner_list in data1[1:]:
         if inner_list[0] != 'WEEKLY_TOTALS:':
             inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
 
-    for inner_list in rows:
+    for inner_list in data1[1:]:
         inner_list.insert(0, default_date)
         inner_list.append(contract_num)
 
@@ -110,11 +110,11 @@ def create_dataframe(default_date, processed_details, default_station, contract_
             data1[i][0] = str(data1[i][0])
             data1[i][1] = str(data1[i][1])
             joined_string = " <-> ".join(data1[i])
-            data1[i] = [joined_string, "", "", ""]
+            data1[i] = [joined_string, "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
             data1[i].append("Yes")
         else:
             data1[i].append("No")
-
+    rows = data1[1:]
     columns.append("Need Edit")
     df1 = pd.DataFrame(rows, columns=columns)
 
@@ -133,14 +133,14 @@ def create_dataframe(default_date, processed_details, default_station, contract_
     data2 = [line.split() for line in table2.split('\n') if line.strip()]
     columns = data2[0]
     columns.insert(0, "DEFAULT DATE")
-    rows = data2[1:]
-    for inner_list in rows:
+    # rows = data2[1:]
+    for inner_list in data2[1:]:
         if inner_list[0] != 'WEEKLY_TOTALS:':
             inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
         else:
             inner_list.insert(1, "")
 
-    for inner_list in rows:
+    for inner_list in data2[1:]:
         inner_list.insert(0, default_date)
 
     for i in range(1, len(data2)):
@@ -148,11 +148,11 @@ def create_dataframe(default_date, processed_details, default_station, contract_
             data2[i][0] = str(data2[i][0])
             data2[i][1] = str(data2[i][1])
             joined_string = " <-> ".join(data2[i])
-            data2[i] = [joined_string, "", "", ""]
+            data2[i] = [joined_string, "", "", "", "", "", "", "", ""]
             data2[i].append("Yes")
         else:
             data2[i].append("No")
-
+    rows = data2[1:]
     columns.append("Need Edit")
     df2 = pd.DataFrame(rows, columns=columns)  
 
@@ -256,7 +256,7 @@ def create_dataframe(default_date, processed_details, default_station, contract_
             if len(data4[i]) != 10:
                 data4[i][0] = str(data4[i][0])
                 joined_string = " <-> ".join(data4[i])
-                data4[i] = [joined_string, "", "", ""]
+                data4[i] = [joined_string, "", "", "", "", "", "", "", "", ""]
                 data4[i].append("Yes")
             else:
                 data4[i].append("No")
@@ -286,13 +286,13 @@ def create_dataframe(default_date, processed_details, default_station, contract_
         if len(data5[i]) != 3:
             data5[i][0] = str(data5[i][0])
             joined_string = " <-> ".join(data5[i])
-            data5[i] = [joined_string, "", "", ""]
+            data5[i] = [joined_string, "", ""]
             data5[i].append("Yes")
         else:
             data5[i].append("No")
                 
-        columns = data5[0]
-        rows = data5[1:]
+    columns = data5[0]
+    rows = data5[1:]
 
     rows = data5
     df5 = pd.DataFrame(rows, columns=None)
@@ -307,7 +307,7 @@ def create_dataframe(default_date, processed_details, default_station, contract_
     else:
         table6 = table6.split("OTHER INFORMATION:", 1)[0]
 
-    table6 = table6.replace("FEDEX ID", "FEDEXID").replace("FEDEX NAME", "FEDEXNAME").replace("-", "xx").replace("’", "xxx").replace("'", "xxxx")
+    table6 = table6.replace("FEDEX ID", "FEDEXID").replace(".", "").replace("FEDEX NAME", "FEDEXNAME").replace("-", "xx").replace("’", "xxx").replace("'", "xxxx")
 
     # Create DataFrame6
     data6 = [line.split() for line in table6.split('\n') if line.strip()]
@@ -353,17 +353,17 @@ def create_dataframe(default_date, processed_details, default_station, contract_
 
     columns = data6[0]
     columns.insert(0, "DEFAULT DATE")
-    rows = data6[1:]
+    # rows = data6[1:]
     # for item in rows:
     #     print(f"length: {len(item)} | item: {item}")
 
-    for inner_list in rows[1:]:
+    for inner_list in data6[2:]:
         if inner_list[0] != 'WEEKLY TOTALS:':
             try:
                 inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
             except ValueError as e:
                 print(f"Error converting date: {e}")
-    for inner_list in rows:
+    for inner_list in data6[1:]:
         inner_list.insert(0, default_date)
 
     for i in range(1, len(data6)):
@@ -371,11 +371,11 @@ def create_dataframe(default_date, processed_details, default_station, contract_
             data6[i][0] = str(data6[i][0])
             data6[i][1] = str(data6[i][1])
             joined_string = " <-> ".join(data6[i])
-            data6[i] = [joined_string, "", "", ""]
+            data6[i] = [joined_string, "", "", "", "", "", "", "", "", "", ""]
             data6[i].append("Yes")
         else:
             data6[i].append("No")
-
+    rows = data6[1:]
     columns.append("Need Edit")
     df6 = pd.DataFrame(rows, columns=columns)
 
@@ -397,12 +397,12 @@ def create_dataframe(default_date, processed_details, default_station, contract_
                 data7[i].insert(1, "")
                 data7[i].insert(2, "")
 
-        rows = data7
-        for inner_list in rows:
+        # rows = data7
+        for inner_list in data7:
             if inner_list[0] != 'WEEKLY_TOTALS:':
                 inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
 
-        for inner_list in rows:
+        for inner_list in data7:
             inner_list.insert(0, default_date)
 
         for i in range(len(data7)):
@@ -410,10 +410,11 @@ def create_dataframe(default_date, processed_details, default_station, contract_
                 data7[i][0] = str(data7[i][0])
                 data7[i][1] = str(data7[i][1])
                 joined_string = " <-> ".join(data7[i])
-                data7[i] = [joined_string, "", "", ""]
+                data7[i] = [joined_string, "", "", "", "", "", "", "", "", ""]
                 data7[i].append("Yes")
             else:
                 data7[i].append("No")
+        rows = data7
         df7 = pd.DataFrame(rows, columns=None)
     else:
         data7 = ""
@@ -425,6 +426,7 @@ def create_dataframe(default_date, processed_details, default_station, contract_
         table8 = processed_details.split("DOUBLE STOPS:", 1)[-1]
         table8 = table8.split("OTHER INFORMATION:", 1)[0]
         table8 = table8.replace("FACILITY#", "FACILITY# ")
+        table8 = table8.replace(".", "")
 
         # Create DataFrame8
         data8 = [line.split() for line in table8.split('\n') if line.strip()]
@@ -446,11 +448,11 @@ def create_dataframe(default_date, processed_details, default_station, contract_
 
         columns = data8[0]
         columns.insert(0, "DEFAULT DATE")
-        rows = data8[1:]
-        for inner_list in rows:
+        # rows = data8[1:]
+        for inner_list in data8[1:]:
             inner_list[0] = datetime.strptime(inner_list[0], '%m/%d/%y').date()
 
-        for inner_list in rows:
+        for inner_list in data8[1:]:
             inner_list.insert(0, default_date)
 
         for i in range(1, len(data8)):
@@ -458,12 +460,13 @@ def create_dataframe(default_date, processed_details, default_station, contract_
                 data8[i][0] = str(data8[i][0])
                 data8[i][1] = str(data8[i][1])
                 joined_string = " <-> ".join(data8[i])
-                data8[i] = [joined_string, "", "", ""]
+                data8[i] = [joined_string, "", "", "", ""]
                 data8[i].append("Yes")
             else:
                 data8[i].append("No")
-
+        rows = data8[1:]
         columns.append("Need Edit")
+        rows = data8[1:]
         df8 = pd.DataFrame(rows, columns=columns)
     else:
         data8 = ""
