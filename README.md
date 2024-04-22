@@ -1,1 +1,1 @@
-# aegispdftoexcel
+pyinstaller --onefile --noconsole --icon=aegis.ico aegispdftoexcel.py
