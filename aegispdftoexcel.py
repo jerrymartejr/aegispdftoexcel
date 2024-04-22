@@ -300,6 +300,9 @@ def create_dataframe(default_date, processed_details, default_station, contract_
 
     # Table 6
     table6 = re.split(r"DRIVER DRIVER[^\n]*", processed_details)[-1]
+    station = re.split(r"DRIVER DRIVER[^\n]*", processed_details)[0].strip()
+    station = station.split("FACILITY #:")[-1]
+
     if "NON-SCAN ACTIVITY" in table6:
         table6 = table6.split("NON-SCAN ACTIVITY", 1)[0]
     elif "DOUBLE STOPS:" in table6:
@@ -336,7 +339,7 @@ def create_dataframe(default_date, processed_details, default_station, contract_
             data6[i][j] = data6[i][j].replace("_", " ").replace("xx", "-").replace("xxx", "’").replace("xxxx", "'")
 
 
-    station = default_station
+    # station = default_station
     for i in range(1, len(data6)):
         if "FACILITY" in data6[i]:
             data6[i] = data6[i][2:]
@@ -367,12 +370,14 @@ def create_dataframe(default_date, processed_details, default_station, contract_
         inner_list.insert(0, default_date)
 
     for i in range(1, len(data6)):
-        if len(data6[i]) != 11:
+        if len(data6[i]) != 11 and ("FEDEXID" not in data6[i]):
             data6[i][0] = str(data6[i][0])
             data6[i][1] = str(data6[i][1])
             joined_string = " <-> ".join(data6[i])
             data6[i] = [joined_string, "", "", "", "", "", "", "", "", "", ""]
             data6[i].append("Yes")
+        elif "FEDEXID" in data6[i]:
+            pass
         else:
             data6[i].append("No")
     rows = data6[1:]
